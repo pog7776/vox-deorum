@@ -26,6 +26,8 @@ const historyTurns = 30;
 function dropSeenEvents(events: Record<string, unknown[]>, seen: Set<string>): Record<string, unknown[]> {
   const kept: Record<string, unknown[]> = {};
   for (const [turn, list] of Object.entries(events)) {
+    // CivAI: MCP results carry non-event keys such as `_markdownConfig`; only turn lists are events.
+    if (!Array.isArray(list)) continue;
     const fresh = list.filter(event => {
       const key = `${turn}:${JSON.stringify(event)}`;
       if (seen.has(key)) return false;

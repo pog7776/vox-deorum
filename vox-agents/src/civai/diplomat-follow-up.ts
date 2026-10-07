@@ -43,8 +43,8 @@ export function needsNegotiatorFollowUp(allSteps: StepResult<Record<string, Tool
 /** The note added to the follow-up step. */
 export const followUpPrompt = `Your negotiator has acted; its result is in the call-negotiator tool result above.
 The counterpart only sees the deal card with the negotiator's one-line message. They did NOT see the negotiator's reasoning, and nothing has answered the rest of their last message.
-- If their last message asked something, or the outcome deserves a word of explanation, reply now with \`send-message\`: briefly and in character. Never reveal private valuations or your leader's secret plans.
-- If the deal card already says everything needed, call \`${endTurnToolName}\` to stay silent.`;
+- Normally, reply now with \`send-message\`: a brief, in-character answer to what they proposed or asked, and the gist of why (without private valuations or your leader's secret plans). A proposal or question deserves an answer.
+- Call \`${endTurnToolName}\` only if a reply would merely repeat the deal card word for word.`;
 
 /**
  * Adds the follow-up note to a step's messages.

@@ -137,6 +137,17 @@ describe('DiplomaticAnalyst evaluation', () => {
     ]);
   });
 
+  it('should ignore non-event keys such as _markdownConfig in the MCP result (CivAI fix)', async () => {
+    const { context, parameters, callTool } = setup();
+    // The MCP tool wrapper adds _markdownConfig to record results; it used to crash dropSeenEvents.
+    callTool.mockImplementation(async (name: string) => name === 'get-diplomatic-events'
+      ? { '4': ['recent event'], _markdownConfig: { configs: [{ format: 'Turn {key}' }] } }
+      : { Success: true });
+    const messages = await analyst.getInitialMessages(parameters, input, context);
+    expect(JSON.parse(messages.at(-1).content).diplomaticHistory[0]).toEqual(
+      { PlayerID: 1, status: 'available', events: { '4': ['recent event'] } });
+  });
+
   it('should preserve 4000 content characters and the full memo allowance without subject prefixes', async () => {
     const { context, parameters, callTool } = setup();
     await analyst.executeEvaluation(parameters, { ...input, Content: 'X'.repeat(4100), Memo: 'M'.repeat(600) }, context, { messages: [] }, {});
