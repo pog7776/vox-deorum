@@ -1,3 +1,5 @@
+// Load the registry first, as upstream tests do, so agent classes resolve in dependency order.
+import "../../../src/infra/agent-registry.js";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";

@@ -1,3 +1,5 @@
+// Load the registry first, as upstream tests do, so agent classes resolve in dependency order.
+import "../../../src/infra/agent-registry.js";
 import { afterEach, describe, expect, it } from "vitest";
 import { LeaderDecider, leaderToolNames } from "../../../src/leaders/leader-decider.js";
 import { stagedDecisions } from "../../../src/leaders/staged-decision.js";
