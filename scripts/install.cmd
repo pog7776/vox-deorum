@@ -274,6 +274,16 @@ if "%CIV5_FOUND%"=="0" (
     )
 )
 
+:: CivAI: an explicit CIV5_PATH_OVERRIDE wins, for Steam libraries on drives not checked above
+if defined CIV5_PATH_OVERRIDE (
+    if exist "%CIV5_PATH_OVERRIDE%\CivilizationV.exe" (
+        set "CIV5_PATH=%CIV5_PATH_OVERRIDE%"
+        set "CIV5_FOUND=1"
+    ) else (
+        echo   [WARN] CIV5_PATH_OVERRIDE has no CivilizationV.exe: %CIV5_PATH_OVERRIDE%
+    )
+)
+
 if "%CIV5_FOUND%"=="1" (
     echo   [OK] Civilization V found at:
     echo     !CIV5_PATH!
