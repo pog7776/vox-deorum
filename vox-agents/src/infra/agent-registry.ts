@@ -15,6 +15,9 @@ import { SpecializedBriefer } from "../briefer/specialized-briefer.js";
 import { NoneStrategist } from "../strategist/agents/none-strategist.js";
 import { NullStrategist } from "../strategist/agents/null-strategist.js";
 import { HumanStrategist } from "../strategist/agents/human-strategist.js";
+// CivAI: leader agents
+import { LeaderStrategist } from "../leaders/leader-strategist.js";
+import { LeaderDecider } from "../leaders/leader-decider.js";
 import { Spokesperson } from "../envoy/agents/spokesperson.js";
 import { Diplomat } from "../envoy/agents/diplomat.js";
 import { Negotiator } from "../envoy/agents/negotiator.js";
@@ -127,6 +130,9 @@ class AgentRegistry {
     this.register(new NoneStrategist());
     this.register(new NullStrategist());
     this.register(new HumanStrategist());
+    // CivAI: leader seat strategist and its model-driven decider
+    this.register(new LeaderStrategist());
+    this.register(new LeaderDecider());
 
     // Register briefer agents
     this.register(new SimpleBriefer());
