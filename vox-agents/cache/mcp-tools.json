@@ -1449,7 +1449,15 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 500,
-          "description": "The analyst's memo: assessment, reaction, and contextual notes"
+          "description": "The memo: assessment, reaction, and contextual notes"
+        },
+        "MemoBy": {
+          "description": "Who wrote the memo (defaults to analyst)",
+          "type": "string",
+          "enum": [
+            "analyst",
+            "diplomat"
+          ]
         }
       },
       "required": [
@@ -1972,6 +1980,224 @@
       },
       "required": [
         "enabled"
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "_meta": {}
+  },
+  {
+    "name": "get-map-area",
+    "description": "Describes the map within a hex radius of a plot, as your civilization knows it: terrain, hills/mountains, features, rivers, resources you can see, improvements (including barbarian encampments), roads, owners, cities and units currently in sight. Use city or zone coordinates from your reports as the center. Plots you have never explored are only counted.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "PlayerID": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 21,
+          "description": "Player whose knowledge of the map is used"
+        },
+        "X": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Center plot X coordinate"
+        },
+        "Y": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Center plot Y coordinate"
+        },
+        "Radius": {
+          "default": 3,
+          "description": "Hex radius around the center (1-5, default 3)",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        }
+      },
+      "required": [
+        "PlayerID",
+        "X",
+        "Y"
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "_meta": {
+      "autoComplete": [
+        "PlayerID"
+      ]
+    }
+  },
+  {
+    "name": "get-resource",
+    "description": "Looks up resources (strategic, luxury, bonus) in the active mod's rules: what reveals them, yields, the improvement that harvests them, which units and buildings need them, mod-specific bonuses such as monopolies, and a short Civilopedia entry. Search by name; one match returns full details.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "Search": {
+          "description": "Fuzzy-matching search term",
+          "type": "string"
+        },
+        "MaxResults": {
+          "default": 20,
+          "description": "Maximum number to return (default: 20)",
+          "type": "number"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "_meta": {
+      "markdownConfig": [
+        "{key}"
+      ]
+    }
+  },
+  {
+    "name": "get-improvement",
+    "description": "Looks up tile improvements (farms, mines, plantations, forts, unique improvements...) in the active mod's rules: the tech that allows them, base yields, resources they harvest, where they can be built, mod-specific effects, and a short Civilopedia entry. Search by name; one match returns full details.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "Search": {
+          "description": "Fuzzy-matching search term",
+          "type": "string"
+        },
+        "MaxResults": {
+          "default": 20,
+          "description": "Maximum number to return (default: 20)",
+          "type": "number"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "_meta": {
+      "markdownConfig": [
+        "{key}"
+      ]
+    }
+  },
+  {
+    "name": "get-promotion",
+    "description": "Looks up unit promotions in the active mod's rules: what each promotion does, which unit types can take it, and which promotions it requires or unlocks. Search by name; one match returns full details.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "Search": {
+          "description": "Fuzzy-matching search term",
+          "type": "string"
+        },
+        "MaxResults": {
+          "default": 20,
+          "description": "Maximum number to return (default: 20)",
+          "type": "number"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "_meta": {
+      "markdownConfig": [
+        "{key}"
+      ]
+    }
+  },
+  {
+    "name": "get-concept",
+    "description": "Reads the Civilopedia's game concept articles for the active mod (e.g. happiness, city growth, combat, city-states, trade routes, religion, espionage). Use it to check how a mechanic really works in Vox Populi. Search by topic; one match returns the article.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "Search": {
+          "description": "Fuzzy-matching search term",
+          "type": "string"
+        },
+        "MaxResults": {
+          "default": 20,
+          "description": "Maximum number to return (default: 20)",
+          "type": "number"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "_meta": {
+      "markdownConfig": [
+        "{key}"
+      ]
+    }
+  },
+  {
+    "name": "get-history",
+    "description": "Recalls your civilization's own history in this game: past strategic decisions with the reasons you gave, and notable events you saw (first contacts, cities founded, buildings, barbarian camps, ruins, battles, religion). One line per entry, oldest first; the most recent entries are returned when there are more. Narrow with FromTurn/ToTurn or Topic.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "PlayerID": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 21,
+          "description": "Player whose history to recall"
+        },
+        "FromTurn": {
+          "description": "First turn to include (default: start of game)",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "ToTurn": {
+          "description": "Last turn to include (default and maximum: the current turn)",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "Topic": {
+          "default": "all",
+          "description": "Only decisions, only events, or both (default)",
+          "type": "string",
+          "enum": [
+            "all",
+            "decisions",
+            "events"
+          ]
+        },
+        "MaxEntries": {
+          "default": 25,
+          "description": "Most entries to return (default 25, max 50)",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        }
+      },
+      "required": [
+        "PlayerID"
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "_meta": {
+      "autoComplete": [
+        "PlayerID"
+      ]
+    }
+  },
+  {
+    "name": "get-lore",
+    "description": "Reads the real-world history of a civilization or leader from the Civilopedia (e.g. your own civilization's past, a rival leader's life). Without Section it returns the outline: title, dates, numbered section headings and a short opening. Then ask for one Section at a time.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "Subject": {
+          "type": "string",
+          "description": "Civilization or leader name, e.g. \"Assyria\" or \"Ashurbanipal\""
+        },
+        "Section": {
+          "description": "Section number from the outline; omit to get the outline",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "Subject"
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
