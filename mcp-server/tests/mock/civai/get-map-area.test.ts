@@ -8,7 +8,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { LuaFunction } from '../../../src/bridge/lua-function.js';
-import createGetMapAreaTool, { formatMapTile, summarizeMapArea, maxMapAreaRadius } from '../../../src/tools/knowledge/get-map-area.js';
+import createGetMapAreaTool, { formatMapTile, summarizeMapArea, maxMapAreaRadius } from '../../../src/tools/civai/get-map-area.js';
 import { getTools } from '../../../src/tools/index.js';
 import { connectToolClient } from '../tool-client.js';
 
@@ -98,7 +98,7 @@ describe('get-map-area tool', () => {
 });
 
 describe('get-map-area.lua fog of war', () => {
-  const script = fs.readFileSync(path.join(process.cwd(), 'lua', 'get-map-area.lua'), 'utf8');
+  const script = fs.readFileSync(path.join(process.cwd(), 'lua', 'civai', 'get-map-area.lua'), 'utf8');
 
   it('only reads team-scoped knowledge and never the debug reveal', () => {
     expect(script).toContain('pPlot:IsRevealed(iTeam, false)');

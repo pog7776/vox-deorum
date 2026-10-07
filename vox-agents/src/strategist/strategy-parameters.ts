@@ -1,3 +1,4 @@
+import type { CivaiToolSettings } from "../civai/lookup-tools.js";
 import { ModelMessage } from "ai";
 import { AgentParameters } from "../infra/vox-agent.js";
 import { VoxContext } from "../infra/vox-context.js";
@@ -29,6 +30,8 @@ export interface StrategistParameters extends AgentParameters {
   gameStates: Record<number, GameState>;
   /** Decision type the strategist is going to make. */
   mode: StrategyDecisionType;
+  /** CivAI: the seat's lookup tool switches and per-decision lookup cap. */
+  civaiTools?: CivaiToolSettings;
   /** Last turn where this player completed strategic decision-making. */
   lastDecisionTurn?: number;
   /** Pre-defined sync random seed (RandomSeedsConfig.sync) configured in vox-agents, if fixed. */

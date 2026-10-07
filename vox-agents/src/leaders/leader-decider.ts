@@ -9,6 +9,7 @@
  */
 
 import { Tool } from "ai";
+import type { StepResult } from "ai";
 import { z } from "zod";
 import type { ModelMessage } from "ai";
 import { VoxAgent } from "../infra/vox-agent.js";
@@ -16,6 +17,7 @@ import type { VoxContext } from "../infra/vox-context.js";
 import type { StrategistParameters } from "../strategist/strategy-parameters.js";
 import { SimpleStrategist } from "../strategist/agents/simple-strategist.js";
 import { createSimpleTool } from "../utils/tools/simple-tools.js";
+import { limitLookups, lookupToolsPrompt, resolveCivaiTools } from "../civai/lookup-tools.js";
 import { stagedDecisions, StagingError, type StagedActionKind } from "./staged-decision.js";
 
 /** Input the leader strategist passes to the decider. */
@@ -35,8 +37,6 @@ export const leaderToolNames = {
   finish: "finish-leader-decision"
 } as const;
 
-/** Read-only MCP tools the decider may call. Each is player-scoped through autoComplete. */
-export const leaderReadToolNames = ["get-map-area"] as const;
 
 /** Shared operating rules appended to every SOUL. */
 export const leaderOperatingPrompt = `
@@ -48,7 +48,7 @@ export const leaderOperatingPrompt = `
 - Either propose a flavor change (with an optional grand strategy) or propose keeping the status quo. Optionally also propose the next technology and the next policy.
   - Flavors range from 0 (deprioritise) to 50 (balanced) to 100 (prioritise). Too many priorities weaken each one.
   - Flavors and strategies only affect the in-game AI's NEXT choices, after existing queues.
-- When geography matters (room to expand, chokepoints, coastlines, barbarian encampments, who lies between you and a rival), call \`get-map-area\` around a coordinate from your report, such as a city's X/Y. It shows only what your civilization has explored.
+${lookupToolsPrompt}
 - Give a short rationale for each proposal, linking it to your goals and the evidence in the report.
 - Finish by calling \`${leaderToolNames.finish}\` with a summary, a review of your goals (even if nothing changed), and any unresolved questions. Nothing is applied unless you finish.
 - Do not invent tools or options. Do not claim an outcome you have not observed.
@@ -86,9 +86,24 @@ export class LeaderDecider extends VoxAgent<StrategistParameters, LeaderDeciderI
     ];
   }
 
-  /** The decider may only use its staging tools and its audited read tools. */
-  public getActiveTools(_parameters: StrategistParameters): string[] {
-    return [...Object.values(leaderToolNames), ...leaderReadToolNames];
+  /** The decider may only use its staging tools and the seat's enabled CivAI lookup tools. */
+  public getActiveTools(parameters: StrategistParameters): string[] {
+    return [...Object.values(leaderToolNames), ...resolveCivaiTools(parameters.civaiTools).tools];
+  }
+
+  /** Prepares each step; withdraws the lookup tools once the seat's lookup cap is reached. */
+  public async prepareStep(
+    parameters: StrategistParameters,
+    input: LeaderDeciderInput,
+    lastStep: StepResult<Record<string, Tool>> | null,
+    allSteps: StepResult<Record<string, Tool>>[],
+    messages: ModelMessage[],
+    context: VoxContext<StrategistParameters>
+  ) {
+    const config = await super.prepareStep(parameters, input, lastStep, allSteps, messages, context);
+    const limited = limitLookups(config.activeTools ?? await this.getRunTools(parameters, input, context), allSteps, parameters.civaiTools);
+    if (limited) config.activeTools = limited;
+    return config;
   }
 
   /** Staging tools bound to this seat's context. */

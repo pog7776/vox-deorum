@@ -139,7 +139,7 @@ class GetMapAreaTool extends LuaFunctionTool<MapAreaLuaResult> {
   /**
    * Path to the Lua script file
    */
-  protected readonly scriptFile = "get-map-area.lua";
+  protected readonly scriptFile = "civai/get-map-area.lua";
 
   /**
    * Optional annotations for the tool
@@ -158,14 +158,17 @@ class GetMapAreaTool extends LuaFunctionTool<MapAreaLuaResult> {
   /**
    * Output schema for the tool (replaces the generic Lua envelope)
    */
+  // The base class types this as the generic Lua envelope; this tool returns the summary instead.
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   get outputSchema() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return MapAreaResultSchema as any;
   }
 
   /**
    * Execute the tool with the provided arguments
    */
-  async execute(args: z.infer<typeof this.inputSchema>): Promise<any> {
+  async execute(args: z.infer<typeof this.inputSchema>): Promise<MapAreaResult> {
     const radius = args.Radius ?? 3;
     const result = await this.call(args.PlayerID, args.X, args.Y, radius);
     if (!result.Success) {
@@ -178,6 +181,6 @@ class GetMapAreaTool extends LuaFunctionTool<MapAreaLuaResult> {
 /**
  * Creates a new instance of the get-map-area tool.
  */
-export default function createGetMapAreaTool() {
+export default function createGetMapAreaTool(): GetMapAreaTool {
   return new GetMapAreaTool();
 }

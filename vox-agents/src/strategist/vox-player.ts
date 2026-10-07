@@ -93,6 +93,7 @@ export class VoxPlayer {
       workingMemory: {},
       gameStates: {},
       mode: playerConfig.strategist === "none-strategist" ? "Strategy" : (playerConfig.mode ?? "Flavor"),
+      civaiTools: playerConfig.civaiTools,
       syncSeed,
       // Populated for every seat; only the human strategist reads it (to block
       // on and receive the in-game panel's submission).

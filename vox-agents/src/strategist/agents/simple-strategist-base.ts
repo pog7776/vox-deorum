@@ -5,6 +5,9 @@
  * Provides common functionality for high-level strategic decision-making in Civilization V.
  */
 
+import type { ModelMessage, StepResult, Tool } from "ai";
+import type { VoxContext } from "../../infra/vox-context.js";
+import { limitLookups, lookupToolsPrompt, resolveCivaiTools } from "../../civai/lookup-tools.js";
 import { Strategist } from "../strategist.js";
 import { StrategistParameters } from "../strategy-parameters.js";
 import { StrategyDecisionType } from "../../types/config.js";
@@ -56,7 +59,7 @@ Your goal is to **call as many tools as you need** to make high-level decisions 
   - The relationship you set takes effect until cancelled (set value = 0), only change it when necessary.
 - You can change the in-game AI's NEXT technology to research (when completing the ongoing one) by calling the \`set-research\` tool.
 - You can change the in-game AI's NEXT policy to adopt (when you accumulate enough culture) by calling the \`set-policy\` tool.
-- When geography matters (room to expand, chokepoints, coastlines, barbarian encampments, who sits between you and a rival), you can call \`get-map-area\` around a coordinate from your reports (e.g. a city's X/Y). It only shows what your civilization has explored.`;
+${lookupToolsPrompt}`;
 
   /**
    * Shared prompt: Briefer capabilities and limitations
@@ -142,8 +145,25 @@ Your goal is to **call as many tools as you need** to make high-level decisions 
       "set-policy",
       "set-relationship",
       "keep-status-quo",
-      "get-map-area"
+      ...resolveCivaiTools(parameters.civaiTools).tools
     ];
+  }
+
+  /**
+   * Prepares each step; withdraws CivAI's lookup tools once the seat's lookup cap is reached.
+   */
+  public async prepareStep(
+    parameters: StrategistParameters,
+    input: unknown,
+    lastStep: StepResult<Record<string, Tool>> | null,
+    allSteps: StepResult<Record<string, Tool>>[],
+    messages: ModelMessage[],
+    context: VoxContext<StrategistParameters>
+  ) {
+    const config = await super.prepareStep(parameters, input, lastStep, allSteps, messages, context);
+    const limited = limitLookups(config.activeTools ?? await this.getRunTools(parameters, input, context), allSteps, parameters.civaiTools);
+    if (limited) config.activeTools = limited;
+    return config;
   }
 
 }

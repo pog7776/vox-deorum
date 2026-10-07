@@ -1,6 +1,6 @@
 # MCP Server Tool Reference
 
-Concise reference for all 44 tools exposed by the MCP Server. Tools are organized by category and registered in `src/tools/index.ts`.
+Concise reference for all 43 tools exposed by the MCP Server. Tools are organized by category and registered in `src/tools/index.ts`.
 
 ## Architecture
 
@@ -33,7 +33,7 @@ All extend `DatabaseQueryTool`. Common input: `Search?`: string (fuzzy match), `
 | `get-military-strategies` | AI military strategy info with production/overall flavors |
 | `get-flavors` | Flavor descriptions for AI preference tuning |
 
-## Knowledge Query Tools (14)
+## Knowledge Query Tools (13)
 
 | Tool | Description | Key Input |
 | --- | --- | --- |
@@ -49,7 +49,6 @@ All extend `DatabaseQueryTool`. Common input: `Search?`: string (fuzzy match), `
 | `get-options` | Available strategic options (techs, policies, strategies/flavors, persona) with current selections | `PlayerID` (0-21), `Mode?`: "Flavor" or "Strategy" |
 | `summarize-units` | Unit overview grouped by civilization and AI type, with military stats | `PlayerID` |
 | `get-military-report` | Military report with units by AI type and tactical zones | `PlayerID` (0-21) |
-| `get-map-area` | Terrain, features, rivers, visible resources, improvements (incl. barbarian encampments), owners, cities and units in sight within a hex radius, from the player's fog of war; unexplored plots are only counted | `PlayerID` (0-21), `X`, `Y`, `Radius?` (1-5, default 3) |
 | `get-victory-progress` | Victory progress for all players, filtered by diplomatic visibility | `PlayerID?` (0-21) |
 
 For paged `read-transcript` calls, `hasMore` and `NextBeforeID` describe the raw ID scan before the optional `Role` filter. A filtered page can therefore contain no messages while `hasMore` is `true`.
@@ -81,6 +80,18 @@ For paged `read-transcript` calls, `hasMore` and `NextBeforeID` describe the raw
 | `pause-game` | Pause the game during a specific player's turn | `PlayerID` (0-21) |
 | `resume-game` | Resume the game during a specific player's turn | `PlayerID` (0-21) |
 | `set-production-mode` | Enable or disable the DLL's production mode (AI turn cooldown); returns whether the bridge update succeeded | `enabled`: boolean |
+
+## CivAI Tools (5)
+
+Added by the CivAI fork. Source in `src/tools/civai/` (Lua in `lua/civai/`), registered through `civaiToolFactories`. All are read-only. Strategists and CivAI leaders get them per seat through `llmPlayers.<id>.civaiTools` (`map`, `rules`, `maxLookups`).
+
+| Tool | Description | Key Input |
+| --- | --- | --- |
+| `get-map-area` | Terrain, features, rivers, visible resources, improvements (incl. barbarian encampments), owners, cities and units in sight within a hex radius, from the player's fog of war; unexplored plots are only counted | `PlayerID` (0-21), `X`, `Y`, `Radius?` (1-5, default 3) |
+| `get-resource` | Resource rules: class, reveal/trade tech, yields, harvesting improvement, units and buildings that need it, mod help text (e.g. monopoly bonuses), short Civilopedia | `Search?`, `MaxResults?` |
+| `get-improvement` | Improvement rules: build tech, base yields, resources harvested, valid terrain/features, unique owner, short Civilopedia | `Search?`, `MaxResults?` |
+| `get-promotion` | Promotion effects, eligible unit combat types, prerequisites and follow-ups | `Search?`, `MaxResults?` |
+| `get-concept` | Civilopedia game concept articles (mechanics as the active mod defines them), with related concepts; articles capped at 2,500 characters | `Search?`, `MaxResults?` |
 
 ## Tool Development
 

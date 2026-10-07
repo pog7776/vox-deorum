@@ -5,6 +5,7 @@
  * Contains transport, LLM, and main configuration structures.
  */
 
+import type { CivaiToolSettings } from "../civai/lookup-tools.js";
 import type { ToolCallFraming } from '../utils/models/tool-rescue/types.js';
 
 /**
@@ -263,6 +264,8 @@ export interface PlayerConfig {
   triage?: TriageSetting;
   /** Files for this seat's workspace; replaces the session and root settings when present. */
   files?: FilesSetting;
+  /** CivAI: lookup tool switches and per-decision lookup cap for this seat. */
+  civaiTools?: CivaiToolSettings;
 }
 
 /**
