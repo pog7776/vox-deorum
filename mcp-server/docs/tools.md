@@ -81,9 +81,9 @@ For paged `read-transcript` calls, `hasMore` and `NextBeforeID` describe the raw
 | `resume-game` | Resume the game during a specific player's turn | `PlayerID` (0-21) |
 | `set-production-mode` | Enable or disable the DLL's production mode (AI turn cooldown); returns whether the bridge update succeeded | `enabled`: boolean |
 
-## CivAI Tools (5)
+## CivAI Tools (7)
 
-Added by the CivAI fork. Source in `src/tools/civai/` (Lua in `lua/civai/`), registered through `civaiToolFactories`. All are read-only. Strategists and CivAI leaders get them per seat through `llmPlayers.<id>.civaiTools` (`map`, `rules`, `maxLookups`).
+Added by the CivAI fork. Source in `src/tools/civai/` (Lua in `lua/civai/`), registered through `civaiToolFactories`. All are read-only. Strategists, CivAI leaders and diplomats get them per seat through `llmPlayers.<id>.civaiTools` (`map`, `rules`, `history`, `maxLookups`); diplomats only get the history group.
 
 | Tool | Description | Key Input |
 | --- | --- | --- |
@@ -92,6 +92,8 @@ Added by the CivAI fork. Source in `src/tools/civai/` (Lua in `lua/civai/`), reg
 | `get-improvement` | Improvement rules: build tech, base yields, resources harvested, valid terrain/features, unique owner, short Civilopedia | `Search?`, `MaxResults?` |
 | `get-promotion` | Promotion effects, eligible unit combat types, prerequisites and follow-ups | `Search?`, `MaxResults?` |
 | `get-concept` | Civilopedia game concept articles (mechanics as the active mod defines them), with related concepts; articles capped at 2,500 characters | `Search?`, `MaxResults?` |
+| `get-history` | The player's own past in this game: its decisions with shortened rationales and notable events it saw (contacts, cities, buildings, camps, ruins, battles, religion, rivals' policy branches), oldest first, capped at the current turn | `PlayerID` (0-21), `FromTurn?`, `ToTurn?`, `Topic?` (all/decisions/events), `MaxEntries?` (default 25, max 50) |
+| `get-lore` | Civilopedia history of a civilization or leader: an outline (title, dates, numbered sections, short opening), then one section per call capped at 2,000 characters | `Subject`, `Section?` |
 
 ## Tool Development
 

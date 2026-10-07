@@ -61,6 +61,9 @@ describe('Diplomat tool set', () => {
       'call-diplomatic-analyst',
       'close-conversation',
       'call-negotiator',
+      // CivAI: history lookups, on unless the seat's civaiTools switches them off
+      'get-history',
+      'get-lore',
     ]);
   });
 });

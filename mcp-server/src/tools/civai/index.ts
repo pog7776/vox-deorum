@@ -8,6 +8,8 @@ import createGetResourceTool from "./get-resource.js";
 import createGetImprovementTool from "./get-improvement.js";
 import createGetPromotionTool from "./get-promotion.js";
 import createGetConceptTool from "./get-concept.js";
+import createGetHistoryTool from "./get-history.js";
+import createGetLoreTool from "./get-lore.js";
 
 /** Factories for CivAI's tools, merged into the server's tool factory map. */
 export const civaiToolFactories = {
@@ -16,4 +18,6 @@ export const civaiToolFactories = {
   getImprovement: createGetImprovementTool,
   getPromotion: createGetPromotionTool,
   getConcept: createGetConceptTool,
+  getHistory: createGetHistoryTool,
+  getLore: createGetLoreTool,
 } as const;

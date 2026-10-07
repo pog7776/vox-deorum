@@ -6,6 +6,8 @@
  * to the analyst for assessment via the call-analyst agent-tool.
  */
 
+import type { ModelMessage, StepResult } from "ai";
+import { diplomatHistoryPrompt, limitLookups, resolveCivaiTools } from "../../civai/lookup-tools.js";
 import { Tool } from "ai";
 import type { Experimental_EvaluationQuestion as EvaluationQuestion, Experimental_EvaluationResult as EvaluationResult } from 'ai';
 import { LiveEnvoy, type LiveEnvoyContext } from "../live-envoy.js";
@@ -117,7 +119,7 @@ export class Diplomat extends LiveEnvoy {
    * Extends LiveEnvoy's tool set with diplomatic events, analyst reporting, and — for
    * civ↔civ diplomacy conversations — the close-conversation tool.
    */
-  public override getActiveTools(_parameters: StrategistParameters): string[] | undefined {
+  public override getActiveTools(parameters: StrategistParameters): string[] | undefined {
     return [
       "get-briefing",
       "send-message",
@@ -125,7 +127,23 @@ export class Diplomat extends LiveEnvoy {
       "call-diplomatic-analyst",
       "close-conversation",
       "call-negotiator",
+      ...resolveCivaiTools(parameters.civaiTools, ["history"]).tools,
     ];
+  }
+
+  /** CivAI: withdraws the history lookups once the seat's lookup cap is reached in this turn. */
+  public override async prepareStep(
+    parameters: StrategistParameters,
+    input: EnvoyThread,
+    lastStep: StepResult<Record<string, Tool>> | null,
+    allSteps: StepResult<Record<string, Tool>>[],
+    messages: ModelMessage[],
+    context: VoxContext<StrategistParameters>
+  ) {
+    const config = await super.prepareStep(parameters, input, lastStep, allSteps, messages, context);
+    const limited = limitLookups(config.activeTools ?? await this.getRunTools(parameters, input, context), allSteps, parameters.civaiTools);
+    if (limited) config.activeTools = limited;
+    return config;
   }
 
   /**
@@ -250,7 +268,7 @@ You represent your government's interests and gather intelligence through diplom
 - Use the \`get-briefing\` tool to retrieve briefings on Military, Economy, and/or Diplomacy.
   - Call it when you need strategic intelligence to inform your conversations.
 - Use the \`get-diplomatic-events\` tool to retrieve recent diplomatic history with another player.
-  - Call it when you need to reference past events or back up your statements.
+  - Call it when you need to reference past events or back up your statements.${diplomatHistoryPrompt(parameters.civaiTools)}
 - Use the \`call-diplomatic-analyst\` tool to send **important** information to the intelligence analyst.
   - Report official statements, proposals, threats, or declarations from other leaders.
   - Report gathered information, rumors, observations, or strategic insights.

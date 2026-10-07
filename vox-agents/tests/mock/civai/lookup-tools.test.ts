@@ -7,6 +7,7 @@ import {
 } from "../../../src/civai/lookup-tools.js";
 import { SimpleStrategist } from "../../../src/strategist/agents/simple-strategist.js";
 import { LeaderDecider } from "../../../src/leaders/leader-decider.js";
+import { Diplomat } from "../../../src/envoy/agents/diplomat.js";
 import { createFakeVoxContext, makeStrategistParameters } from "../../helpers/fake-vox-context.js";
 
 /** A finished step that called the named tools. */
@@ -25,9 +26,14 @@ describe("resolveCivaiTools", () => {
   });
 
   it("switches groups off independently", () => {
-    expect(resolveCivaiTools({ map: false }).tools).toEqual([...civaiToolGroups.rules]);
-    expect(resolveCivaiTools({ rules: false }).tools).toEqual([...civaiToolGroups.map]);
-    expect(resolveCivaiTools({ map: false, rules: false }).tools).toEqual([]);
+    expect(resolveCivaiTools({ map: false }).tools).toEqual([...civaiToolGroups.rules, ...civaiToolGroups.history]);
+    expect(resolveCivaiTools({ rules: false, history: false }).tools).toEqual([...civaiToolGroups.map]);
+    expect(resolveCivaiTools({ map: false, rules: false, history: false }).tools).toEqual([]);
+  });
+
+  it("limits an agent to the groups it may use", () => {
+    expect(resolveCivaiTools(undefined, ["history"]).tools).toEqual(["get-history", "get-lore"]);
+    expect(resolveCivaiTools({ history: false }, ["history"]).tools).toEqual([]);
   });
 
   it("treats maxLookups 0 as off and clamps bad values", () => {
@@ -83,5 +89,26 @@ describe("strategists honour the seat's civaiTools", () => {
     const spent = await decider.prepareStep(params, input, step("get-concept"), [step("get-concept")], [], ctx);
     expect(spent.activeTools!.some(name => allLookupTools.includes(name))).toBe(false);
     expect(spent.activeTools).toContain("finish-leader-decision");
+  });
+});
+
+describe("diplomat history lookups", () => {
+  it("offers only the history group, and nothing when it's switched off", () => {
+    const diplomat = new Diplomat();
+    const tools = diplomat.getActiveTools(makeStrategistParameters())!;
+    expect(tools).toEqual(expect.arrayContaining(["get-history", "get-lore", "send-message"]));
+    expect(tools).not.toContain("get-map-area");
+    expect(diplomat.getActiveTools(makeStrategistParameters({ civaiTools: { history: false } }))).not.toContain("get-history");
+  });
+
+  it("withdraws history lookups at the cap but keeps send-message", async () => {
+    const diplomat = new Diplomat();
+    const ctx = createFakeVoxContext("game-player-1").asContext();
+    const params = makeStrategistParameters({ civaiTools: { maxLookups: 1 } });
+    const thread = { id: "t", agent: 1, messages: [], participants: [] } as never;
+    const spent = await diplomat.prepareStep(params, thread, step("get-history"), [step("get-history")], [], ctx);
+    expect(spent.activeTools).toBeDefined();
+    expect(spent.activeTools).not.toContain("get-history");
+    expect(spent.activeTools).toContain("send-message");
   });
 });
