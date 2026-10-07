@@ -35,6 +35,9 @@ export const leaderToolNames = {
   finish: "finish-leader-decision"
 } as const;
 
+/** Read-only MCP tools the decider may call. Each is player-scoped through autoComplete. */
+export const leaderReadToolNames = ["get-map-area"] as const;
+
 /** Shared operating rules appended to every SOUL. */
 export const leaderOperatingPrompt = `
 # How this decision works
@@ -45,6 +48,7 @@ export const leaderOperatingPrompt = `
 - Either propose a flavor change (with an optional grand strategy) or propose keeping the status quo. Optionally also propose the next technology and the next policy.
   - Flavors range from 0 (deprioritise) to 50 (balanced) to 100 (prioritise). Too many priorities weaken each one.
   - Flavors and strategies only affect the in-game AI's NEXT choices, after existing queues.
+- When geography matters (room to expand, chokepoints, coastlines, barbarian encampments, who lies between you and a rival), call \`get-map-area\` around a coordinate from your report, such as a city's X/Y. It shows only what your civilization has explored.
 - Give a short rationale for each proposal, linking it to your goals and the evidence in the report.
 - Finish by calling \`${leaderToolNames.finish}\` with a summary, a review of your goals (even if nothing changed), and any unresolved questions. Nothing is applied unless you finish.
 - Do not invent tools or options. Do not claim an outcome you have not observed.
@@ -82,9 +86,9 @@ export class LeaderDecider extends VoxAgent<StrategistParameters, LeaderDeciderI
     ];
   }
 
-  /** The decider may only use its staging tools. */
+  /** The decider may only use its staging tools and its audited read tools. */
   public getActiveTools(_parameters: StrategistParameters): string[] {
-    return Object.values(leaderToolNames);
+    return [...Object.values(leaderToolNames), ...leaderReadToolNames];
   }
 
   /** Staging tools bound to this seat's context. */

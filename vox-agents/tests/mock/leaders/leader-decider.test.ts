@@ -1,7 +1,7 @@
 // Load the registry first, as upstream tests do, so agent classes resolve in dependency order.
 import "../../../src/infra/agent-registry.js";
 import { afterEach, describe, expect, it } from "vitest";
-import { LeaderDecider, leaderToolNames } from "../../../src/leaders/leader-decider.js";
+import { LeaderDecider, leaderReadToolNames, leaderToolNames } from "../../../src/leaders/leader-decider.js";
 import { stagedDecisions } from "../../../src/leaders/staged-decision.js";
 import { createFakeVoxContext, makeStrategistParameters } from "../../helpers/fake-vox-context.js";
 
@@ -26,8 +26,8 @@ describe("LeaderDecider", () => {
     expect(system.startsWith("# Identity\nYou are Gandhi.")).toBe(true);
   });
 
-  it("should only expose its staging tools", () => {
-    expect(new Set(decider.getActiveTools(makeStrategistParameters()))).toEqual(new Set(Object.values(leaderToolNames)));
+  it("should only expose its staging tools and audited read tools", () => {
+    expect(new Set(decider.getActiveTools(makeStrategistParameters()))).toEqual(new Set([...Object.values(leaderToolNames), ...leaderReadToolNames]));
     for (const name of Object.values(leaderToolNames)) expect(tools[name]).toBeDefined();
   });
 

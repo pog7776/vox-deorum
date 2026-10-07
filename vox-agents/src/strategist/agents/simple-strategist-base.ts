@@ -55,7 +55,8 @@ Your goal is to **call as many tools as you need** to make high-level decisions 
   - The values (-100, very hostile to 100, very friendly) will be added to in-game AI's existing evaluation. Higher values increase peace acceptance, and vice versa.
   - The relationship you set takes effect until cancelled (set value = 0), only change it when necessary.
 - You can change the in-game AI's NEXT technology to research (when completing the ongoing one) by calling the \`set-research\` tool.
-- You can change the in-game AI's NEXT policy to adopt (when you accumulate enough culture) by calling the \`set-policy\` tool.`;
+- You can change the in-game AI's NEXT policy to adopt (when you accumulate enough culture) by calling the \`set-policy\` tool.
+- When geography matters (room to expand, chokepoints, coastlines, barbarian encampments, who sits between you and a rival), you can call \`get-map-area\` around a coordinate from your reports (e.g. a city's X/Y). It only shows what your civilization has explored.`;
 
   /**
    * Shared prompt: Briefer capabilities and limitations
@@ -140,7 +141,8 @@ Your goal is to **call as many tools as you need** to make high-level decisions 
       "set-research",
       "set-policy",
       "set-relationship",
-      "keep-status-quo"
+      "keep-status-quo",
+      "get-map-area"
     ];
   }
 

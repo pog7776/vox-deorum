@@ -24,6 +24,7 @@ import createPauseGameTool from "./actions/pause-game.js";
 import createResumeGameTool from "./actions/resume-game.js";
 import createSetProductionModeTool from "./actions/set-production-mode.js";
 import createSummarizeUnitsTool from "./knowledge/summarize-units.js";
+import createGetMapAreaTool from "./knowledge/get-map-area.js";
 import createSetMetadataTool from "./actions/set-metadata.js";
 import createKeepStatusQuoTool from "./actions/keep-status-quo.js";
 import createGetOptionsTool from "./knowledge/get-options.js";
@@ -69,6 +70,7 @@ const toolFactories = {
     getOpinions: createGetOpinionsTool,
     getCities: createGetCitiesTool,
     summarizeUnits: createSummarizeUnitsTool,
+    getMapArea: createGetMapAreaTool,
     getOptions: createGetOptionsTool,
     setStrategy: createSetStrategyTool,
     setPersona: createSetPersonaTool,
