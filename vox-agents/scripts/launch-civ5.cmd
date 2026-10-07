@@ -24,6 +24,21 @@ if "%STEAM_PATH%"=="" (
 :: Find Civ 5 in Steam library
 set "CIV5_PATH=%STEAM_PATH%\steamapps\common\Sid Meier's Civilization V"
 
+:: CivAI: check every Steam library listed in libraryfolders.vdf (any drive letter)
+if not exist "!CIV5_PATH!\CivilizationV.exe" (
+    set "LIBRARY_VDF=!STEAM_PATH!\steamapps\libraryfolders.vdf"
+    if exist "!LIBRARY_VDF!" (
+        for /f "usebackq tokens=1,*" %%P in (`findstr /c:"\"path\"" "!LIBRARY_VDF!"`) do (
+            set "LIBRARY_PATH=%%~Q"
+            set "LIBRARY_PATH=!LIBRARY_PATH:\\=\!"
+            if exist "!LIBRARY_PATH!\steamapps\common\Sid Meier's Civilization V\CivilizationV.exe" (
+                set "CIV5_PATH=!LIBRARY_PATH!\steamapps\common\Sid Meier's Civilization V"
+                goto :found
+            )
+        )
+    )
+)
+
 :: Check other common drives if not found
 if not exist "!CIV5_PATH!\CivilizationV.exe" (
     for %%D in (D E F G) do (
