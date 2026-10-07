@@ -5,6 +5,7 @@
  * Implements retry strategies to handle transient failures in async operations.
  */
 
+import { UnsupportedFunctionalityError } from "@ai-sdk/provider";
 import { Logger } from "winston";
 import { setTimeout } from 'node:timers/promises';
 
@@ -138,6 +139,13 @@ export async function exponentialRetry<T>(
       // Context length exceeded — retrying won't help, fail immediately
       if (isContextLengthError(error)) {
         logger.warn(`[${source}] Context length exceeded, terminating retry`, lastError);
+        throw lastError;
+      }
+
+      // The provider SDK can't express this request (e.g. a mid-conversation system message on
+      // Gemini); it fails the same way every time and never reaches the provider.
+      if (UnsupportedFunctionalityError.isInstance(error)) {
+        logger.warn(`[${source}] Request not supported by the provider SDK, terminating retry`, lastError);
         throw lastError;
       }
 

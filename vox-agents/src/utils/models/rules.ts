@@ -36,6 +36,9 @@ export const modelRules: ModelRule[] = [
   { provider: openWeightProviders, match: /gemma-4/i, options: { toolMiddleware: 'prompt' } },
   { provider: openWeightProviders, match: /qwen/i, options: { systemPromptFirst: true, toolMiddleware: 'prompt' } },
   { provider: openWeightProviders, match: /minimax/i, options: { toolMiddleware: 'prompt', thinkMiddleware: 'think' } },
+  // The Google SDK only accepts system messages at the start of the conversation; envoys and
+  // diplomats append a closing system hint, so later system messages are sent as user messages.
+  { provider: 'google', match: /^(gemini|gemma)/i, options: { systemPromptFirst: true } },
   { provider: 'claude-code', match: /.*/, options: { concurrencyLimit: 1 } },
   { provider: 'codex', match: /gpt-5\.6-sol/i, options: { concurrencyLimit: 1 } },
   { provider: 'codex', match: /gpt-5\.6-terra/i, options: { concurrencyLimit: 2 } },

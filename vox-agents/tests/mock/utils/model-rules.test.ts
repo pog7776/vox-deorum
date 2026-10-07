@@ -103,7 +103,7 @@ describe('model rules', () => {
   it('should leave natively tool-calling providers without prompt middleware', () => {
     expect(applyModelRules('openai', 'gpt-oss-120b')).toBeUndefined();
     expect(applyModelRules('anthropic', 'claude-sonnet-5')).toBeUndefined();
-    expect(applyModelRules('google', 'gemini-3.6-flash')).toBeUndefined();
+    expect(applyModelRules('google', 'gemini-3.6-flash')?.toolMiddleware).toBeUndefined();
   });
 
   it('should retain GPT-5.6 reasoning and Codex concurrency rules', () => {
