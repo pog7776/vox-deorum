@@ -61,7 +61,9 @@ describe('Diplomat tool set', () => {
       'call-diplomatic-analyst',
       'close-conversation',
       'call-negotiator',
-      // CivAI: history lookups, on unless the seat's civaiTools switches them off
+      // CivAI: end-turn (only usable in the follow-up step after a negotiator handoff), then
+      // history lookups, on unless the seat's civaiTools switches them off
+      'end-turn',
       'get-history',
       'get-lore',
     ]);

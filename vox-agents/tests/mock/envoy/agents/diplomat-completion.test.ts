@@ -58,7 +58,9 @@ describe('Diplomat.stopCheck', () => {
     expect(diplomat.stopCheck(parameters, input, steps[3], steps, context)).toBe(false);
   });
 
-  it.each(['send-message', 'call-negotiator', 'close-conversation'])(
+  // CivAI: call-negotiator no longer ends the turn by itself; the diplomat gets one follow-up step
+  // to reply or call end-turn (see tests/mock/civai/diplomat-follow-up.test.ts).
+  it.each(['send-message', 'close-conversation', 'end-turn'])(
     'stops when the current step calls the completion tool %s regardless of its result',
     toolName => {
       const input = thread();
@@ -122,7 +124,7 @@ describe('Diplomat.stopCheck', () => {
     expect(diplomat.stopCheck(parameters, thread(), both, [both], context)).toBe(false);
   });
 
-  it.each(['call-negotiator', 'close-conversation'])(
+  it.each(['close-conversation'])(
     'stops when a previous step already called %s',
     toolName => {
       const input = thread();

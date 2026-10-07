@@ -6,6 +6,7 @@
  * to the analyst for assessment via the call-analyst agent-tool.
  */
 
+import { createEndTurnTool, endTurnToolName, followUpTools, needsNegotiatorFollowUp, withFollowUpPrompt } from "../../civai/diplomat-follow-up.js";
 import type { ModelMessage, StepResult } from "ai";
 import { diplomatHistoryPrompt, limitLookups, resolveCivaiTools } from "../../civai/lookup-tools.js";
 import { Tool } from "ai";
@@ -127,11 +128,16 @@ export class Diplomat extends LiveEnvoy {
       "call-diplomatic-analyst",
       "close-conversation",
       "call-negotiator",
+      endTurnToolName,
       ...resolveCivaiTools(parameters.civaiTools, ["history"]).tools,
     ];
   }
 
-  /** CivAI: withdraws the history lookups once the seat's lookup cap is reached in this turn. */
+  /**
+   * CivAI: after a negotiator handoff, the next step may only reply (send-message) or stay silent
+   * (end-turn), with a note on what the counterpart did and didn't see. Otherwise end-turn is
+   * withheld, and history lookups are withdrawn once the seat's lookup cap is reached.
+   */
   public override async prepareStep(
     parameters: StrategistParameters,
     input: EnvoyThread,
@@ -141,9 +147,28 @@ export class Diplomat extends LiveEnvoy {
     context: VoxContext<StrategistParameters>
   ) {
     const config = await super.prepareStep(parameters, input, lastStep, allSteps, messages, context);
-    const limited = limitLookups(config.activeTools ?? await this.getRunTools(parameters, input, context), allSteps, parameters.civaiTools);
-    if (limited) config.activeTools = limited;
+    const declared = config.activeTools ?? await this.getRunTools(parameters, input, context) ?? [];
+    if (needsNegotiatorFollowUp(allSteps)) {
+      config.activeTools = declared.filter(name => followUpTools.includes(name));
+      config.messages = withFollowUpPrompt(config.messages ?? messages);
+      return config;
+    }
+    const available = declared.filter(name => name !== endTurnToolName);
+    config.activeTools = limitLookups(available, allSteps, parameters.civaiTools) ?? available;
     return config;
+  }
+
+  /** CivAI: keeps the turn open for one follow-up step after a negotiator handoff. */
+  public override stopCheck(
+    parameters: StrategistParameters,
+    input: EnvoyThread,
+    lastStep: StepResult<Record<string, Tool>>,
+    allSteps: StepResult<Record<string, Tool>>[],
+    context: VoxContext<StrategistParameters>
+  ): boolean {
+    const done = super.stopCheck(parameters, input, lastStep, allSteps, context);
+    if (!done || this.reachedStepLimit(allSteps, context)) return done;
+    return !needsNegotiatorFollowUp(allSteps);
   }
 
   /**
@@ -154,6 +179,7 @@ export class Diplomat extends LiveEnvoy {
     return {
       ...super.getExtraTools(context),
       "close-conversation": createCloseConversationTool(context),
+      [endTurnToolName]: createEndTurnTool(context),
     };
   }
 
@@ -175,7 +201,7 @@ export class Diplomat extends LiveEnvoy {
    * send-message (a spoken reply ends the turn) plus the non-spoken terminal tools, sourced from the
    * shared `terminalActionTools` so the retry-suppression predicate can never drift from this set.
    */
-  public override completionTools = ["send-message", ...terminalActionTools];
+  public override completionTools = ["send-message", ...terminalActionTools, endTurnToolName];
 
   /**
    * Grounds the diplomat's turn so it sees live deal context at every step (specs §7). The cities plus
